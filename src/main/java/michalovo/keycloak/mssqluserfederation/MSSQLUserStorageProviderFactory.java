@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package info.kyrcha.keycloak.mysqluserfederation;
+package michalovo.keycloak.mssqluserfederation;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -30,18 +30,18 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.storage.UserStorageProviderFactory;
 
-public class MySQLUserStorageProviderFactory implements UserStorageProviderFactory<MySQLUserStorageProvider> {
+public class MSSQLUserStorageProviderFactory implements UserStorageProviderFactory<MSSQLUserStorageProvider> {
 
-    private static final Logger logger = Logger.getLogger(MySQLUserStorageProviderFactory.class);
+    private static final Logger logger = Logger.getLogger(MSSQLUserStorageProviderFactory.class);
 
     protected static final List<ProviderConfigProperty> configMetadata;
 
-    public static final String PROVIDER_NAME = "mysql-users";
+    public static final String PROVIDER_NAME = "mssql-users";
 
     static {
-        configMetadata = ProviderConfigurationBuilder.create().property().name("mysql")
-                .type(ProviderConfigProperty.STRING_TYPE).label("MySQL URI")
-                .defaultValue("jdbc:mysql://localhost/db?user=root").helpText("MySQL URI").add().property()
+        configMetadata = ProviderConfigurationBuilder.create().property().name("mssql")
+                .type(ProviderConfigProperty.STRING_TYPE).label("MSSQL URI")
+                .defaultValue("jdbc:sqlserver://localhost/db?user=root").helpText("MSSQL URI").add().property()
                 .name("table").type(ProviderConfigProperty.STRING_TYPE).label("Users Table").defaultValue("users")
                 .helpText("Table where users are stored").add().property().name("usernamecol")
                 .type(ProviderConfigProperty.STRING_TYPE).label("Username Column").defaultValue("username")
@@ -65,9 +65,9 @@ public class MySQLUserStorageProviderFactory implements UserStorageProviderFacto
     @Override
     public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config)
             throws ComponentValidationException {
-        String uri = config.getConfig().getFirst("mysql");
+        String uri = config.getConfig().getFirst("mssql");
         if (uri == null)
-            throw new ComponentValidationException("MySQL connection URI not present");
+            throw new ComponentValidationException("MSSQL connection URI not present");
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(uri);
@@ -82,8 +82,8 @@ public class MySQLUserStorageProviderFactory implements UserStorageProviderFacto
     }
 
     @Override
-    public MySQLUserStorageProvider create(KeycloakSession session, ComponentModel config) {
-        String uri = config.getConfig().getFirst("mysql");
+    public MSSQLUserStorageProvider create(KeycloakSession session, ComponentModel config) {
+        String uri = config.getConfig().getFirst("mssql");
 
         Connection conn = null;
         try {
@@ -96,7 +96,7 @@ public class MySQLUserStorageProviderFactory implements UserStorageProviderFacto
             throw new ComponentValidationException(ex.getMessage());
         }
 
-        return new MySQLUserStorageProvider(session, config, conn);
+        return new MSSQLUserStorageProvider(session, config, conn);
     }
 
 }

@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package info.kyrcha.keycloak.mysqluserfederation;
+package michalovo.keycloak.mssqluserfederation;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -38,16 +38,16 @@ import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.adapter.AbstractUserAdapter;
 import org.keycloak.storage.user.UserLookupProvider;
 
-public class MySQLUserStorageProvider
+public class MSSQLUserStorageProvider
         implements UserStorageProvider, UserLookupProvider, CredentialInputValidator, CredentialInputUpdater {
 
     protected KeycloakSession session;
     protected Connection conn;
     protected ComponentModel config;
 
-    private static final Logger logger = Logger.getLogger(MySQLUserStorageProvider.class);
+    private static final Logger logger = Logger.getLogger(MSSQLUserStorageProvider.class);
 
-    public MySQLUserStorageProvider(KeycloakSession session, ComponentModel config, Connection conn) {
+    public MSSQLUserStorageProvider(KeycloakSession session, ComponentModel config, Connection conn) {
         this.session = session;
         this.config = config;
         this.conn = conn;

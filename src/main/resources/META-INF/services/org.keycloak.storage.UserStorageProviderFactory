@@ -1,1 +1,1 @@
-info.kyrcha.keycloak.mysqluserfederation.MySQLUserStorageProviderFactory
+michalovo.keycloak.mssqluserfederation.MSSQLUserStorageProviderFactory

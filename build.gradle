@@ -38,8 +38,9 @@ dependencies {
     // https://mvnrepository.com/artifact/commons-codec/commons-codec
     compile group: 'commons-codec', name: 'commons-codec', version: '1.14'
 
-    // https://mvnrepository.com/artifact/mysql/mysql-connector-java
-    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.20'
+    // https://mvnrepository.com/artifact/com.microsoft.sqlserver/mssql-jdbc
+
+    compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '11.1.1.jre8-preview'
 
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     // api 'org.apache.commons:commons-math3:3.6.1'
