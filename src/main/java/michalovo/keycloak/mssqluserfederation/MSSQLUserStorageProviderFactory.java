@@ -65,6 +65,11 @@ public class MSSQLUserStorageProviderFactory implements UserStorageProviderFacto
     @Override
     public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config)
             throws ComponentValidationException {
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         String uri = config.getConfig().getFirst("mssql");
         if (uri == null)
             throw new ComponentValidationException("MSSQL connection URI not present");
@@ -83,6 +88,11 @@ public class MSSQLUserStorageProviderFactory implements UserStorageProviderFacto
 
     @Override
     public MSSQLUserStorageProvider create(KeycloakSession session, ComponentModel config) {
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         String uri = config.getConfig().getFirst("mssql");
 
         Connection conn = null;

@@ -20,6 +20,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -29,6 +31,7 @@ import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputUpdater;
 import org.keycloak.credential.CredentialInputValidator;
 import org.keycloak.credential.CredentialModel;
+import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -37,9 +40,13 @@ import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.adapter.AbstractUserAdapter;
 import org.keycloak.storage.user.UserLookupProvider;
+import org.keycloak.storage.user.UserQueryProvider;
+import org.keycloak.storage.user.UserRegistrationProvider;
 
 public class MSSQLUserStorageProvider
-        implements UserStorageProvider, UserLookupProvider, CredentialInputValidator, CredentialInputUpdater {
+        implements UserStorageProvider, UserLookupProvider, CredentialInputValidator, CredentialInputUpdater, UserQueryProvider {
+
+
 
     protected KeycloakSession session;
     protected Connection conn;
@@ -60,7 +67,7 @@ public class MSSQLUserStorageProvider
         ResultSet rs = null;
         UserModel adapter = null;
         try {
-            String query = "SELECT " + this.config.getConfig().getFirst("usernamecol") + ", "
+            String query = "SELECT  " + this.config.getConfig().getFirst("usernamecol") + ", "
                     + this.config.getConfig().getFirst("passwordcol") + " FROM "
                     + this.config.getConfig().getFirst("table") + " WHERE "
                     + this.config.getConfig().getFirst("usernamecol") + "=?;";
@@ -74,7 +81,7 @@ public class MSSQLUserStorageProvider
             }
             if (pword != null) {
                 adapter = createAdapter(realm, username);
-                System.out.println("HIW: user succesfully returned");
+                System.out.println("HIW: "+adapter.getId()+" user succesfully returned");
             }
             // Now do something with the ResultSet ....
         } catch (SQLException ex) {
@@ -120,7 +127,7 @@ public class MSSQLUserStorageProvider
 
     @Override
     public UserModel getUserById(String id, RealmModel realm) {
-        System.out.println("hiw: getUserById ...");
+        System.out.println("hiw: getUserById "+ id);
         StorageId storageId = new StorageId(id);
         String username = storageId.getExternalId();
         return getUserByUsername(username, realm);
@@ -128,12 +135,14 @@ public class MSSQLUserStorageProvider
 
     @Override
     public UserModel getUserByEmail(String email, RealmModel realm) {
-        System.out.println("hiw: getUserByEmail ...");
+        System.out.println("hiw: getUserByEmail(null) ...");
         return null;
     }
 
     @Override
     public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
+        System.out.println("hiw: isConfiguredFor ...");
+        System.out.println(user.getUsername() + "'s credtype " + credentialType);
         String password = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -245,9 +254,14 @@ public class MSSQLUserStorageProvider
             hex = DigestUtils.md5Hex(input.getChallengeResponse());
         }
 
-        boolean res = password.equalsIgnoreCase(hex);
+        boolean res = password.trim().equalsIgnoreCase(hex.trim());
         if (res)
             System.out.println("hiw: HESLO je validni!");
+        else {
+            System.out.println("HIW: heslo neni stejne");
+            System.out.println(password);
+            System.out.println(hex);
+        }
         return res;
     }
 
@@ -262,7 +276,7 @@ public class MSSQLUserStorageProvider
 
     @Override
     public void disableCredentialType(RealmModel realm, UserModel user, String credentialType) {
-
+        System.out.println("hiw:disableCred ...");
     }
 
     @Override
@@ -282,4 +296,63 @@ public class MSSQLUserStorageProvider
         }
     }
 
+    @Override
+    public int getUsersCount(RealmModel realm) {
+        System.out.println("hiw:getUsersCount");
+        return 0;
+    }
+
+    @Override
+    public List<UserModel> getUsers(RealmModel realm) {
+        System.out.println("hiw:getUsers");
+        return null;
+    }
+
+    @Override
+    public List<UserModel> getUsers(RealmModel realm, int firstResult, int maxResults) {
+        System.out.println("hiw:getUsersA");
+        return null;
+    }
+
+    @Override
+    public List<UserModel> searchForUser(String search, RealmModel realm) {
+        System.out.println("hiw:searchForUser " + search);
+        return null;
+    }
+
+    @Override
+    public List<UserModel> searchForUser(String search, RealmModel realm, int firstResult, int maxResults) {
+        System.out.println("hiw:searchForUser " + search);
+        return null;
+    }
+
+    @Override
+    public List<UserModel> searchForUser(Map<String, String> params, RealmModel realm) {
+        System.out.println("hiw:searchForUserB");
+        return null;
+    }
+
+    @Override
+    public List<UserModel> searchForUser(Map<String, String> params, RealmModel realm, int firstResult, int maxResults) {
+        System.out.println("hiw:searchForUserA " + params.toString());
+        return null;
+    }
+
+    @Override
+    public List<UserModel> getGroupMembers(RealmModel realm, GroupModel group, int firstResult, int maxResults) {
+        System.out.println("hiw:getGroupMembers");
+        return null;
+    }
+
+    @Override
+    public List<UserModel> getGroupMembers(RealmModel realm, GroupModel group) {
+        System.out.println("hiw:getGroupMembers");
+        return null;
+    }
+
+    @Override
+    public List<UserModel> searchForUserByUserAttribute(String attrName, String attrValue, RealmModel realm) {
+        System.out.println("hiw:searchForUserByUserAttr");
+        return null;
+    }
 }
