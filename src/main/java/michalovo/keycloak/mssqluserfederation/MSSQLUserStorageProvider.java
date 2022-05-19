@@ -55,6 +55,7 @@ public class MSSQLUserStorageProvider
 
     @Override
     public UserModel getUserByUsername(String username, RealmModel realm) {
+        System.out.println("HIW: starting getUserByUsername " + username);
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         UserModel adapter = null;
@@ -69,9 +70,11 @@ public class MSSQLUserStorageProvider
             String pword = null;
             if (rs.next()) {
                 pword = rs.getString(this.config.getConfig().getFirst("passwordcol"));
+                System.out.println("HIW: A3 " + pword);
             }
             if (pword != null) {
                 adapter = createAdapter(realm, username);
+                System.out.println("HIW: user succesfully returned");
             }
             // Now do something with the ResultSet ....
         } catch (SQLException ex) {
@@ -117,6 +120,7 @@ public class MSSQLUserStorageProvider
 
     @Override
     public UserModel getUserById(String id, RealmModel realm) {
+        System.out.println("hiw: getUserById ...");
         StorageId storageId = new StorageId(id);
         String username = storageId.getExternalId();
         return getUserByUsername(username, realm);
@@ -124,6 +128,7 @@ public class MSSQLUserStorageProvider
 
     @Override
     public UserModel getUserByEmail(String email, RealmModel realm) {
+        System.out.println("hiw: getUserByEmail ...");
         return null;
     }
 
@@ -239,11 +244,16 @@ public class MSSQLUserStorageProvider
         } else {
             hex = DigestUtils.md5Hex(input.getChallengeResponse());
         }
-        return password.equalsIgnoreCase(hex);
+
+        boolean res = password.equalsIgnoreCase(hex);
+        if (res)
+            System.out.println("hiw: HESLO je validni!");
+        return res;
     }
 
     @Override
     public boolean updateCredential(RealmModel realm, UserModel user, CredentialInput input) {
+        System.out.println("hiw: updateCredential ...");
         if (input.getType().equals(CredentialModel.PASSWORD))
             throw new ReadOnlyException("user is read only for this update");
 
