@@ -19,10 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jboss.logging.Logger;
@@ -31,10 +28,7 @@ import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputUpdater;
 import org.keycloak.credential.CredentialInputValidator;
 import org.keycloak.credential.CredentialModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.storage.ReadOnlyException;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
@@ -122,6 +116,19 @@ public class MSSQLUserStorageProvider
             public String getUsername() {
                 return username;
             }
+
+            @Override
+            protected Set<RoleModel> getRoleMappingsInternal() {
+                List<RoleModel> roles = new ArrayList<RoleModel>();
+                if (username.toLowerCase().trim().equals("xyz")) {
+                    roles.add(new UserRoleModel("adminuser", realm));
+                    System.out.println("hiw: nastavuju role pro super uzivatele " + username);
+                } else {
+                    System.out.println("hiw: role pro uzivatele " +  username.toLowerCase().trim());
+                }
+                roles.add(new UserRoleModel("normaluser", realm));
+                return new HashSet<RoleModel>(roles);
+            }
         };
     }
 
@@ -132,6 +139,8 @@ public class MSSQLUserStorageProvider
         String username = storageId.getExternalId();
         return getUserByUsername(username, realm);
     }
+
+
 
     @Override
     public UserModel getUserByEmail(String email, RealmModel realm) {
@@ -267,9 +276,14 @@ public class MSSQLUserStorageProvider
 
     @Override
     public boolean updateCredential(RealmModel realm, UserModel user, CredentialInput input) {
+        System.out.println("Try to update credentials type "+input.getType()+" for user " + user.getId());
+        if (!supportsCredentialType(input.getType()) || !(input instanceof UserCredentialModel)) {
+            return false;
+        }
         System.out.println("hiw: updateCredential ...");
         if (input.getType().equals(CredentialModel.PASSWORD))
-            throw new ReadOnlyException("user is read only for this update");
+            System.out.println("heslo je stejny.. coze?");
+            //throw new ReadOnlyException("user is read only for this update");
 
         return false;
     }
@@ -335,7 +349,53 @@ public class MSSQLUserStorageProvider
     @Override
     public List<UserModel> searchForUser(Map<String, String> params, RealmModel realm, int firstResult, int maxResults) {
         System.out.println("hiw:searchForUserA " + params.toString());
-        return null;
+        List<UserModel> result = new ArrayList<UserModel>();
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        UserModel adapter = null;
+        try {
+            String query = "SELECT  " + this.config.getConfig().getFirst("usernamecol") + ", "
+                    + this.config.getConfig().getFirst("passwordcol") + " FROM "
+                    + this.config.getConfig().getFirst("table");
+            pstmt = conn.prepareStatement(query);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                String un = rs.getString(this.config.getConfig().getFirst("usernamecol"));
+                adapter = createAdapter(realm, un);
+                result.add(adapter);
+                System.out.println("HIW: " + adapter.getId() + "(" + un + ")" + " user succesfully found :)");
+            }
+            // Now do something with the ResultSet ....
+        } catch (SQLException ex) {
+            // handle any errors
+            System.out.println("SQLException: " + ex.getMessage());
+            System.out.println("SQLState: " + ex.getSQLState());
+            System.out.println("VendorError: " + ex.getErrorCode());
+        } finally {
+            // it is a good idea to release
+            // resources in a finally{} block
+            // in reverse-order of their creation
+            // if they are no-longer needed
+
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException sqlEx) {
+                } // ignore
+
+                rs = null;
+            }
+
+            if (pstmt != null) {
+                try {
+                    pstmt.close();
+                } catch (SQLException sqlEx) {
+                } // ignore
+
+                pstmt = null;
+            }
+        }
+        return result;
     }
 
     @Override
@@ -355,4 +415,6 @@ public class MSSQLUserStorageProvider
         System.out.println("hiw:searchForUserByUserAttr");
         return null;
     }
+
+
 }
